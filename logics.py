@@ -14,6 +14,22 @@ def logic(val, color, x, y):
     """возвращает массив доступных ходов"""
     return logic_dict[val](logic_board, color, x, y)
 
+def move_logic_figure(old_x, old_y, new_y, new_x, board):
+    tmp = board[old_x][old_y]
+    board[old_x][old_y] = 0
+    board[new_x][new_y] = tmp
+    return board
+
+def print_lg_board(board):
+    for i in range(len(board)):
+        print("")
+        for j in range(len(board)):
+            if board[i][j]:
+                print(board[i][j].val, end=" ")
+            else:
+                print(board[i][j], end=" ")
+
+    print("")
 def pawn_logic(board, color, x, y):
     possible_moves = []
 
@@ -22,7 +38,7 @@ def pawn_logic(board, color, x, y):
             possible_moves.append([x - 1, y])
         if board[x-1][y-1] and board[x - 1][y - 1].color == Black:
             possible_moves.append([x - 1, y - 1])
-        if board[x-1][y-1] and board[x - 1][y + 1].color == Black:
+        if board[x-1][y+1] and board[x - 1][y + 1].color == Black:
             possible_moves.append([x - 1, y + 1])
 
     else:
@@ -30,12 +46,25 @@ def pawn_logic(board, color, x, y):
             possible_moves.append([x + 1, y])
         if board[x+1][y-1] and board[x + 1][y - 1].color == White:
             possible_moves.append([x + 1, y - 1])
-        if board[x+1][y-1] and board[x + 1][y + 1].color == White:
+        if board[x+1][y+1] and board[x + 1][y + 1].color == White:
             possible_moves.append([x + 1, y + 1])
 
     return possible_moves
 
+def rook_logic(board, color, x, y):
+    pass
 
+def knight_logic(board, color, x, y):
+    pass
+
+def bishop_logic(board, color, x, y):
+    pass
+
+def queen_logic(board, color, x, y):
+    pass
+
+def king_logic(board, color, x, y):
+    pass
 def create_logic_board():
     lb = np.zeros((8, 8), dtype=object)
 
@@ -84,4 +113,4 @@ def create_available_moves_sprites(moves, available_moves_sprites):
 
 
 logic_board = create_logic_board()
-logic_dict = {"P": pawn_logic}
+logic_dict = {"P": pawn_logic, "R": rook_logic, "K": knight_logic, "B": bishop_logic, "Q": queen_logic, "S": king_logic}

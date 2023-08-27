@@ -1,6 +1,7 @@
 from settings import *
 from start_game import create_visual_board
 import logics as lg
+from logics import logic_board
 
 
 def draw_board():
@@ -17,6 +18,9 @@ def main_loop():
     running = True
     screen.fill("GREY")
     board = create_visual_board()
+    l_board = lg.logic_board
+    turn_counter = 1
+    turn_flag = None
 
     draw_board()
 
@@ -39,15 +43,26 @@ def main_loop():
                 running = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if turn_counter % 2 != 0:
+                    turn_flag = White
+                else:
+                    turn_flag = Black
+
+                lg.print_lg_board(l_board)
+
                 for move in available_moves_sprites:
                     if move.rect.collidepoint(event.pos):
+                        l_board = lg.move_logic_figure(selected_figure.x, selected_figure.y, move.x, move.y, l_board)
                         selected_figure.move_figure(move.x, move.y)
-                        # TODO CHANGE LOGIC_BOARD ON MOVE
+                        turn_counter += 1
 
                 for figure in figures:
-                    if figure.rect.collidepoint(event.pos):
+                    if figure.rect.collidepoint(event.pos) and figure.color == turn_flag:
                         selected_figure = figure
                         lg.create_available_moves_sprites(lg.logic(figure.val, figure.color, figure.x, figure.y), available_moves_sprites)
+
+                    elif figure.rect.collidepoint(event.pos) and figure.color != turn_flag:
+                        available_moves_sprites.empty()
 
         draw_board()
         figures.draw(screen)
