@@ -7,6 +7,7 @@ img_dict = {(Black, "P"): "img/bP.png", (Black, "R"): "img/bR.png", (Black, "K")
 
 
 class Figure(pygame.sprite.Sprite):
+    """Класс игровой фигуры"""
     def __init__(self, color, value, xy):
         super().__init__()
         self.first_move = False     # Флаг первого хода фигуры
@@ -20,7 +21,8 @@ class Figure(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(360 + self.y*80, 80 + self.x*80))
 
     def move_figure(self, x, y):
+        """Функция перемещиня фигуры на визуальной доске"""
         print("yes")
-        self.x = x
-        self.y = y
-        self.rect = self.image.get_rect(center=(360 + self.x * 80, 80 + self.y * 80))
+        self.x = y
+        self.y = x
+        self.rect = self.image.get_rect(center=(360 + self.y * 80, 80 + self.x * 80))

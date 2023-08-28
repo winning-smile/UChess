@@ -15,12 +15,17 @@ def logic(val, color, x, y):
     return logic_dict[val](logic_board, color, x, y)
 
 def move_logic_figure(old_x, old_y, new_y, new_x, board):
+    """Перемещает фигуру на логической доске"""
+    flag = "move"
+    if board[new_x][new_y]:
+        flag = "kill"
     tmp = board[old_x][old_y]
     board[old_x][old_y] = 0
     board[new_x][new_y] = tmp
-    return board
+    return board, flag
 
 def print_lg_board(board):
+    """Вывод логической доски для отладки"""
     for i in range(len(board)):
         print("")
         for j in range(len(board)):
@@ -30,42 +35,70 @@ def print_lg_board(board):
                 print(board[i][j], end=" ")
 
     print("")
+
+def pawn_corner_check(x, y):
+    corner_x_dict = {7: "U", 0: "D"}
+    corner_y_dict = {7: "R", 0: "R"}
+
+    if x in list(corner_x_dict.keys()):
+        return corner_x_dict[x]
+
+    if y in list(corner_y_dict.keys()):
+        return corner_y_dict[y]
+
 def pawn_logic(board, color, x, y):
+    """Создание массива возможных ходов пешки"""
     possible_moves = []
 
     if color == White:
-        if not board[x-1][y]:
-            possible_moves.append([x - 1, y])
-        if board[x-1][y-1] and board[x - 1][y - 1].color == Black:
-            possible_moves.append([x - 1, y - 1])
-        if board[x-1][y+1] and board[x - 1][y + 1].color == Black:
-            possible_moves.append([x - 1, y + 1])
+        pcc_flag = pawn_corner_check(x, y)
+
+        if pcc_flag != "U":
+            if not board[x-1][y]:
+                possible_moves.append([x - 1, y])
+            if pcc_flag != "L":
+                if board[x-1][y-1] and board[x - 1][y - 1].color == Black:
+                    possible_moves.append([x - 1, y - 1])
+            if pcc_flag != "R":
+                if board[x-1][y+1] and board[x - 1][y + 1].color == Black:
+                    possible_moves.append([x - 1, y + 1])
 
     else:
-        if not board[x+1][y]:
-            possible_moves.append([x + 1, y])
-        if board[x+1][y-1] and board[x + 1][y - 1].color == White:
-            possible_moves.append([x + 1, y - 1])
-        if board[x+1][y+1] and board[x + 1][y + 1].color == White:
-            possible_moves.append([x + 1, y + 1])
+        pcc_flag = pawn_corner_check(x, y)
+
+        if pcc_flag != "D":
+            if not board[x+1][y]:
+                possible_moves.append([x + 1, y])
+            if pcc_flag != "L":
+                if board[x+1][y-1] and board[x + 1][y - 1].color == White:
+                    possible_moves.append([x + 1, y - 1])
+            if pcc_flag != "R":
+                if board[x+1][y+1] and board[x + 1][y + 1].color == White:
+                    possible_moves.append([x + 1, y + 1])
 
     return possible_moves
 
 def rook_logic(board, color, x, y):
+    """Создание массива возможных ходов ладьи"""
     pass
 
 def knight_logic(board, color, x, y):
+    """Создание массива возможных ходов коня"""
     pass
 
 def bishop_logic(board, color, x, y):
+    """Создание массива возможных ходов слона"""
     pass
 
 def queen_logic(board, color, x, y):
+    """Создание массива возможных ходов королевы"""
     pass
 
 def king_logic(board, color, x, y):
+    """Создание массива возможных ходов короля"""
     pass
 def create_logic_board():
+    """Создание логической доски для вычисления возможных ходов фигур"""
     lb = np.zeros((8, 8), dtype=object)
 
     # Создаём логическую доску
@@ -97,6 +130,7 @@ def create_logic_board():
 
 
 def create_available_moves_sprites(moves, available_moves_sprites):
+    """По массиву возможных ходов добавляем спрайт хода для будущей отрисовки"""
     for sprite in available_moves_sprites:
         sprite.kill()
         del sprite
@@ -110,6 +144,8 @@ def create_available_moves_sprites(moves, available_moves_sprites):
         sprite.y = move[0]
         sprite.rect = sprite.image.get_rect(center=(360 + sprite.x * 80, 80 + sprite.y * 80))
         available_moves_sprites.add(sprite)
+
+    return available_moves_sprites
 
 
 logic_board = create_logic_board()

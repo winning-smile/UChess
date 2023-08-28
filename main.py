@@ -1,11 +1,11 @@
 from settings import *
 from start_game import create_visual_board
 import logics as lg
-from logics import logic_board
+import itertools as it
 
 
 def draw_board():
-    """Отрисовка полей игровой доски"""
+    """Отрисовка фона игрового поля"""
     for i in range(8):
         for j in range(8):
             if (i+j) % 2 == 0:
@@ -20,11 +20,11 @@ def main_loop():
     board = create_visual_board()
     l_board = lg.logic_board
     turn_counter = 1
-    turn_flag = None
+    selected = False
 
     draw_board()
 
-    #
+    # Выбранная в текущий момент фигура
     selected_figure = None
     # Группируем спрайты возможных ходов
     available_moves_sprites = pygame.sprite.Group()
@@ -42,31 +42,45 @@ def main_loop():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            # События по нажатию мыши
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Флаг для определения чей ход и отрисовки возможных ходов только у фигур одного цвета
                 if turn_counter % 2 != 0:
                     turn_flag = White
                 else:
                     turn_flag = Black
 
+                # для отладки логической доски
                 lg.print_lg_board(l_board)
 
-                for move in available_moves_sprites:
-                    if move.rect.collidepoint(event.pos):
-                        l_board = lg.move_logic_figure(selected_figure.x, selected_figure.y, move.x, move.y, l_board)
-                        selected_figure.move_figure(move.x, move.y)
-                        turn_counter += 1
+                for figure, move in it.zip_longest(figures, available_moves_sprites):
+                    if move:
+                        if move.rect.collidepoint(event.pos):
+                            l_board, move_flag = lg.move_logic_figure(selected_figure.x, selected_figure.y, move.x, move.y, l_board)
+                            if move_flag == "kill":
+                                for fig in figures:
+                                    if fig.y == move.x and fig.x == move.y:
+                                        fig.kill()
 
-                for figure in figures:
-                    if figure.rect.collidepoint(event.pos) and figure.color == turn_flag:
-                        selected_figure = figure
-                        lg.create_available_moves_sprites(lg.logic(figure.val, figure.color, figure.x, figure.y), available_moves_sprites)
+                            selected_figure.move_figure(move.x, move.y)
+                            turn_counter += 1
+                            available_moves_sprites.empty()
+                            break
 
-                    elif figure.rect.collidepoint(event.pos) and figure.color != turn_flag:
-                        available_moves_sprites.empty()
+                    if figure:
+                        if figure.rect.collidepoint(event.pos):
+                            if figure.color == turn_flag:
+                                selected_figure = figure
+                                print(figure.x, figure.y)
+                                available_moves_sprites = lg.create_available_moves_sprites(lg.logic(figure.val, figure.color, figure.x, figure.y), available_moves_sprites)
+                                break
+                            else:
+                                available_moves_sprites.empty()
+                                break
 
         draw_board()
-        figures.draw(screen)
         available_moves_sprites.draw(screen)
+        figures.draw(screen)
         pygame.display.flip()
 
     pygame.quit()
