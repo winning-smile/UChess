@@ -1,7 +1,10 @@
 import pygame
 from settings import Black, White
 import numpy as np
-#
+
+# TODO castling
+# TODO Check\mate
+# TODO taking on the pass
 class Logic_Figure:
     def __init__(self, color, value, xy):
         self.first_move = False     # Флаг первого хода фигуры

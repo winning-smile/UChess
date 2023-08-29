@@ -26,3 +26,8 @@ class Figure(pygame.sprite.Sprite):
         self.x = y
         self.y = x
         self.rect = self.image.get_rect(center=(360 + self.y * 80, 80 + self.x * 80))
+
+    def to_queen(self):
+        self.val = "Q"
+        self.image = pygame.image.load(img_dict[(self.color, self.val)]).convert_alpha()
+        self.rect = self.image.get_rect(center=(360 + self.y * 80, 80 + self.x * 80))

@@ -3,6 +3,17 @@ from start_game import create_visual_board
 import logics as lg
 import itertools as it
 
+# TODO Timer
+# TODO Turn history
+# TODO Engine analysis
+# TODO liches manual analysis
+# TODO killed figures
+# TODO turn back
+# TODO Win condition and screen
+# TODO Menu -> [classic, rapid, blitz]
+# TODO Check/Mate red glow
+# TODO Mouse.drag figures moves
+# TODO Multiplayer
 
 def draw_board():
     """Отрисовка фона игрового поля"""
@@ -13,6 +24,23 @@ def draw_board():
             else:
                 pygame.draw.rect(screen, "Brown", (i * 80 + 320, j * 80 + 40, 80, 80))
 
+
+def create_turn_display(turn_counter):
+    screen.fill(Grey)
+    if turn_counter % 2 != 0:
+        turn_display = font_arial.render(f'Turn {turn_counter}', True, (0, 0, 0))
+        color_display = font_arial.render("for WHITE", True, (255, 255, 255))
+    else:
+        turn_display = font_arial.render(f'Turn {turn_counter}', True, (0, 0, 0))
+        color_display = font_arial.render("for BLACK", True, (0, 0, 0))
+
+    turn_display_rect = turn_display.get_rect()
+    color_display_rect = color_display.get_rect()
+    turn_display_rect.center = (1100, 340)
+    color_display_rect.center = (1100, 380)
+
+    screen.blit(turn_display, turn_display_rect)
+    screen.blit(color_display, color_display_rect)
 
 def main_loop():
     running = True
@@ -32,6 +60,8 @@ def main_loop():
     figures = pygame.sprite.Group()
     for elem in board:
         figures.add(elem)
+
+    create_turn_display(turn_counter)
 
     # Главный цикл игры
     while running:
@@ -53,6 +83,7 @@ def main_loop():
                 # для отладки логической доски
                 lg.print_lg_board(l_board)
 
+                # TODO Починить то что нельзя убить верхние фигуры
                 for figure, move in it.zip_longest(figures, available_moves_sprites):
                     if move:
                         if move.rect.collidepoint(event.pos):
@@ -63,6 +94,17 @@ def main_loop():
                                         fig.kill()
 
                             selected_figure.move_figure(move.x, move.y)
+
+                            if selected_figure.val == "P":
+                                if selected_figure.x == 7 and selected_figure.color == Black:
+                                    selected_figure.to_queen()
+                                    l_board[selected_figure.x][selected_figure.y].val = "Q"
+                                elif selected_figure.x == 0 and selected_figure.color == White:
+                                    selected_figure.to_queen()
+                                    l_board[selected_figure.x][selected_figure.y].val = "Q"
+
+                            create_turn_display(turn_counter+1)
+                            pygame.mixer.music.play()
                             turn_counter += 1
                             available_moves_sprites.empty()
                             break
