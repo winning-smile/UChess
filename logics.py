@@ -80,7 +80,40 @@ def pawn_logic(board, color, x, y):
 
 def rook_logic(board, color, x, y):
     """Создание массива возможных ходов ладьи"""
-    pass
+    possible_moves = []
+    rook_moves_u = []
+    rook_moves_d = []
+    rook_moves_l = []
+    rook_moves_r = []
+    rook_moves_all = [rook_moves_u, rook_moves_d, rook_moves_l, rook_moves_r]
+
+    for i, j in zip(range(x, 7, 1), range(1, 8, 1)):
+        rook_moves_u.append([x + j, y])
+
+    for i, j in zip(range(x, 0, -1), range(1, 8, 1)):
+        rook_moves_d.append([x - j, y])
+
+    for i, j in zip(range(y, 7, 1), range(1, 8, 1)):
+        rook_moves_l.append([x, y + j])
+
+    for i, j in zip(range(y, 0, -1), range(1, 8, 1)):
+        rook_moves_r.append([x, y - j])
+
+    if color == White:
+        for rook_moves in rook_moves_all:
+            for move in rook_moves:
+                x = move[0]
+                y = move[1]
+                if not board[x][y]:
+                    possible_moves.append(move)
+                elif board[x][y].color == Black:
+                    possible_moves.append(move)
+                    break
+                elif board[x][y].color == White:
+                    break
+
+    return possible_moves
+
 
 def knight_corner_check(knight_moves):
     moves = []
@@ -162,12 +195,40 @@ def bishop_logic(board, color, x, y):
     return possible_moves
 
 def queen_logic(board, color, x, y):
-    """Создание массива возможных ходов королевы"""
-    pass
+    possible_moves = []
+    possible_moves.extend(bishop_logic(board, color, x, y))
+    possible_moves.extend(rook_logic(board, color, x, y))
+
+    return possible_moves
+
+def king_corner_check(king_moves):
+    moves = []
+    for move in king_moves:
+        if move[0] in [0, 1, 2, 3, 4, 5, 6, 7] and move[1] in [0, 1, 2, 3, 4, 5, 6, 7]:
+            moves.append(move)
+
+    return moves
 
 def king_logic(board, color, x, y):
     """Создание массива возможных ходов короля"""
-    pass
+    possible_moves = []
+    king_moves = [[x-1, y], [x-1, y+1], [x, y+1], [x+1, y+1], [x+1, y], [x+1, y-1], [x, y-1], [x-1, y-1]]
+    king_moves = king_corner_check(king_moves)
+
+    if color == White:
+        for move in king_moves:
+            x = move[0]
+            y = move[1]
+            if not board[x][y] or board[x][y].color == Black:
+                possible_moves.append(move)
+    else:
+        for move in king_moves:
+            x = move[0]
+            y = move[1]
+            if not board[x][y] or board[x][y].color == White:
+                possible_moves.append(move)
+
+    return possible_moves
 def create_logic_board():
     """Создание логической доски для вычисления возможных ходов фигур"""
     lb = np.zeros((8, 8), dtype=object)
