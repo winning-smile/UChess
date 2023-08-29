@@ -1,5 +1,5 @@
 from settings import *
-from start_game import create_visual_board
+from start_game import *
 import logics as lg
 import itertools as it
 
@@ -26,7 +26,6 @@ def draw_board():
 
 
 def create_turn_display(turn_counter):
-    screen.fill(Grey)
     if turn_counter % 2 != 0:
         turn_display = font_arial.render(f'Turn {turn_counter}', True, (0, 0, 0))
         color_display = font_arial.render("for WHITE", True, (255, 255, 255))
@@ -49,9 +48,9 @@ def main_loop():
     l_board = lg.logic_board
     turn_counter = 1
     selected = False
+    game_started = False
 
     draw_board()
-
     # Выбранная в текущий момент фигура
     selected_figure = None
     # Группируем спрайты возможных ходов
@@ -61,7 +60,21 @@ def main_loop():
     for elem in board:
         figures.add(elem)
 
-    create_turn_display(turn_counter)
+    # Таймер
+    timer_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(timer_event, 1000)
+    white_seconds = 15
+    white_minutes = 120
+    black_seconds = 15
+    black_minutes = 120
+
+    white_timer = font_arial.render("{}:0{}".format(white_minutes, white_seconds), True, (0, 0, 0))
+    white_timer_rect = white_timer.get_rect()
+    white_timer_rect.center = (1100, 660)
+
+    black_timer = font_arial.render("{}:0{}".format(black_minutes, black_seconds), True, (0, 0, 0))
+    black_timer_rect = black_timer.get_rect()
+    black_timer_rect.center = (1100, 60)
 
     # Главный цикл игры
     while running:
@@ -72,8 +85,56 @@ def main_loop():
             if event.type == pygame.QUIT:
                 running = False
 
+            if game_started:
+                if event.type == timer_event:
+                    if turn_counter % 2 != 0:
+                        black_seconds -= 1
+
+                        if black_seconds > 9:
+                            black_timer = font_arial.render("{}:{}".format(black_minutes, black_seconds), True, (0, 0, 0))
+                        else:
+                            black_timer = font_arial.render("{}:0{}".format(black_minutes, black_seconds), True, (0, 0, 0))
+
+                        if white_seconds > 9:
+                            white_timer = font_arial.render("{}:{}".format(white_minutes, white_seconds), True, (0, 0, 0))
+                        else:
+                            white_timer = font_arial.render("{}:0{}".format(white_minutes, white_seconds), True, (0, 0, 0))
+
+                        white_timer_rect = white_timer.get_rect()
+                        white_timer_rect.center = (1100, 60)
+
+                        black_timer_rect = black_timer.get_rect()
+                        black_timer_rect.center = (1100, 660)
+
+                        if black_seconds == 0:
+                            black_seconds = 60
+                            black_minutes -= 1
+                            pygame.time.set_timer(timer_event, 1000)
+                    else:
+                        white_seconds -= 1
+                        if white_seconds > 9:
+                            white_timer = font_arial.render("{}:{}".format(white_minutes, white_seconds), True, (0, 0, 0))
+                        else:
+                            white_timer = font_arial.render("{}:0{}".format(white_minutes, white_seconds), True, (0, 0, 0))
+
+                        if black_seconds > 9:
+                            black_timer = font_arial.render("{}:{}".format(black_minutes, black_seconds), True, (0, 0, 0))
+                        else:
+                            black_timer = font_arial.render("{}:0{}".format(black_minutes, black_seconds), True, (0, 0, 0))
+
+                        white_timer_rect = white_timer.get_rect()
+                        white_timer_rect.center = (1100, 60)
+
+                        black_timer_rect = black_timer.get_rect()
+                        black_timer_rect.center = (1100, 660)
+
+                        if white_seconds == 0:
+                            white_seconds = 60
+                            white_minutes -= 1
+                            pygame.time.set_timer(timer_event, 1000)
+
             # События по нажатию мыши
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 # Флаг для определения чей ход и отрисовки возможных ходов только у фигур одного цвета
                 if turn_counter % 2 != 0:
                     turn_flag = White
@@ -103,7 +164,7 @@ def main_loop():
                                     selected_figure.to_queen()
                                     l_board[selected_figure.x][selected_figure.y].val = "Q"
 
-                            create_turn_display(turn_counter+1)
+                            game_started = True
                             pygame.mixer.music.play()
                             turn_counter += 1
                             available_moves_sprites.empty()
@@ -120,9 +181,13 @@ def main_loop():
                                 available_moves_sprites.empty()
                                 break
 
+        screen.fill("GREY")
         draw_board()
         available_moves_sprites.draw(screen)
         figures.draw(screen)
+        create_turn_display(turn_counter)
+        screen.blit(black_timer, black_timer_rect)
+        screen.blit(white_timer, white_timer_rect)
         pygame.display.flip()
 
     pygame.quit()
