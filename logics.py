@@ -2,10 +2,11 @@ import pygame
 from settings import Black, White
 import numpy as np
 
-# TODO castling
 # TODO Check\mate
 # TODO taking on the pass
-class Logic_Figure:
+
+
+class LogicFigure:
     def __init__(self, color, value, xy):
         self.first_move = False     # Флаг первого хода фигуры
         self.color = color          # Цвет фигуры
@@ -13,19 +14,85 @@ class Logic_Figure:
         self.x = xy[0]              # Координата по х
         self.y = xy[1]              # Координата по y
 
+
 def logic(val, color, x, y):
     """возвращает массив доступных ходов"""
     return logic_dict[val](logic_board, color, x, y)
 
+
 def move_logic_figure(old_x, old_y, new_y, new_x, board):
     """Перемещает фигуру на логической доске"""
+
     flag = "move"
     if board[new_x][new_y]:
         flag = "kill"
+
+    if board[old_x][old_y].val == "S" and not board[old_x][old_y].first_move:
+        if board[old_x][old_y].color == White:
+            if board[new_x][new_y+1] and board[new_x][new_y+1].val == "R" and (not board[new_x][new_y+1].first_move) and board[new_x][new_y+1].color == board[old_x][old_y].color:
+                flag = "wsc"
+
+                tmp = board[old_x][old_y]
+                board[old_x][old_y] = 0
+                board[new_x][new_y] = tmp
+                tmp = board[new_x][new_y+1]
+                board[new_x][new_y + 1] = 0
+                board[new_x][new_y - 1] = tmp
+
+                board[new_x][new_y].first_move = True
+                board[new_x][new_y - 1].first_move = True
+                return board, flag
+
+            elif board[new_x][new_y-2] and board[new_x][new_y-2].val == "R" and (not board[new_x][new_y-2].first_move) and board[new_x][new_y-2].color == board[old_x][old_y].color:
+                flag = "wlc"
+
+                tmp = board[old_x][old_y]
+                board[old_x][old_y] = 0
+                board[new_x][new_y] = tmp
+                tmp = board[new_x][new_y - 2]
+                board[new_x][new_y - 2] = 0
+                board[new_x][new_y + 1] = tmp
+
+                board[new_x][new_y].first_move = True
+                board[new_x][new_y + 1].first_move = True
+                return board, flag
+
+        else:
+            if board[new_x][new_y+1] and board[new_x][new_y+1].val == "R" and (not board[new_x][new_y+1].first_move) and board[new_x][new_y+1].color == board[old_x][old_y].color:
+                flag = "bsc"
+
+                tmp = board[old_x][old_y]
+                board[old_x][old_y] = 0
+                board[new_x][new_y] = tmp
+                tmp = board[new_x][new_y+1]
+                board[new_x][new_y + 1] = 0
+                board[new_x][new_y - 1] = tmp
+
+                board[new_x][new_y].first_move = True
+                board[new_x][new_y - 1].first_move = True
+                return board, flag
+
+            elif board[new_x][new_y-2] and board[new_x][new_y-2].val == "R" and (not board[new_x][new_y-2].first_move) and board[new_x][new_y-2].color == board[old_x][old_y].color:
+                flag = "blc"
+
+                tmp = board[old_x][old_y]
+                board[old_x][old_y] = 0
+                board[new_x][new_y] = tmp
+                tmp = board[new_x][new_y - 2]
+                board[new_x][new_y - 2] = 0
+                board[new_x][new_y + 1] = tmp
+
+                board[new_x][new_y].first_move = True
+                board[new_x][new_y + 1].first_move = True
+                return board, flag
+
+    board[old_x][old_y].first_move = True
     tmp = board[old_x][old_y]
     board[old_x][old_y] = 0
     board[new_x][new_y] = tmp
+
     return board, flag
+
 
 def print_lg_board(board):
     """Вывод логической доски для отладки"""
@@ -39,6 +106,7 @@ def print_lg_board(board):
 
     print("")
 
+
 def pawn_corner_check(x, y):
     corner_x_dict = {0: "U", 8: "D"}
     corner_y_dict = {7: "R", 0: "L"}
@@ -48,6 +116,7 @@ def pawn_corner_check(x, y):
 
     if y in list(corner_y_dict.keys()):
         return corner_y_dict[y]
+
 
 def pawn_logic(board, color, x, y):
     """Создание массива возможных ходов пешки"""
@@ -59,6 +128,8 @@ def pawn_logic(board, color, x, y):
         if pcc_flag != "U":
             if not board[x-1][y]:
                 possible_moves.append([x - 1, y])
+                if not board[x][y].first_move and not board[x-2][y]:
+                    possible_moves.append([x - 2, y])
             if pcc_flag != "L":
                 if board[x-1][y-1] and board[x - 1][y - 1].color == Black:
                     possible_moves.append([x - 1, y - 1])
@@ -72,6 +143,8 @@ def pawn_logic(board, color, x, y):
         if pcc_flag != "D":
             if not board[x+1][y]:
                 possible_moves.append([x + 1, y])
+                if not board[x][y].first_move and not board[x + 2][y]:
+                    possible_moves.append([x + 2, y])
             if pcc_flag != "L":
                 if board[x+1][y-1] and board[x + 1][y - 1].color == White:
                     possible_moves.append([x + 1, y - 1])
@@ -80,6 +153,7 @@ def pawn_logic(board, color, x, y):
                     possible_moves.append([x + 1, y + 1])
 
     return possible_moves
+
 
 def rook_logic(board, color, x, y):
     """Создание массива возможных ходов ладьи"""
@@ -114,6 +188,18 @@ def rook_logic(board, color, x, y):
                     break
                 elif board[x][y].color == White:
                     break
+    else:
+        for rook_moves in rook_moves_all:
+            for move in rook_moves:
+                x = move[0]
+                y = move[1]
+                if not board[x][y]:
+                    possible_moves.append(move)
+                elif board[x][y].color == White:
+                    possible_moves.append(move)
+                    break
+                elif board[x][y].color == Black:
+                    break
 
     return possible_moves
 
@@ -147,6 +233,7 @@ def knight_logic(board, color, x, y):
                 possible_moves.append(move)
 
     return possible_moves
+
 
 def bishop_logic(board, color, x, y):
     """Создание массива возможных ходов слона"""
@@ -197,12 +284,15 @@ def bishop_logic(board, color, x, y):
 
     return possible_moves
 
+
 def queen_logic(board, color, x, y):
     possible_moves = []
+    #if color == White:
     possible_moves.extend(bishop_logic(board, color, x, y))
     possible_moves.extend(rook_logic(board, color, x, y))
 
     return possible_moves
+
 
 def king_corner_check(king_moves):
     moves = []
@@ -212,6 +302,20 @@ def king_corner_check(king_moves):
 
     return moves
 
+
+def king_castling_check(x, k_y, r_y, board):
+    if k_y > r_y:
+        for i in range(k_y-1, r_y, -1):
+            if board[x][i]:
+                return False
+    else:
+        for i in range(k_y+1, r_y, 1):
+            if board[x][i]:
+                return False
+
+    return True
+
+
 def king_logic(board, color, x, y):
     """Создание массива возможных ходов короля"""
     possible_moves = []
@@ -220,46 +324,64 @@ def king_logic(board, color, x, y):
 
     if color == White:
         for move in king_moves:
-            x = move[0]
-            y = move[1]
-            if not board[x][y] or board[x][y].color == Black:
-                possible_moves.append(move)
-    else:
-        for move in king_moves:
-            x = move[0]
-            y = move[1]
-            if not board[x][y] or board[x][y].color == White:
+            x_new = move[0]
+            y_new = move[1]
+            if not board[x_new][y_new] or board[x_new][y_new].color == Black:
                 possible_moves.append(move)
 
+        if not board[x][y].first_move:
+            if not board[7][0].first_move:
+                if king_castling_check(7, 4, 0, board):
+                    possible_moves.append([7, 2])
+            if not board[7][7].first_move:
+                if king_castling_check(7, 4, 7, board):
+                    possible_moves.append([7, 6])
+    else:
+        for move in king_moves:
+            x_new = move[0]
+            y_new = move[1]
+            if not board[x_new][y_new] or board[x_new][y_new].color == White:
+                possible_moves.append(move)
+
+        if not board[x][y].first_move:
+            if not board[0][0].first_move:
+                if king_castling_check(0, 4, 0, board):
+                    possible_moves.append([0, 2])
+            if not board[0][7].first_move:
+                if king_castling_check(0, 4, 7, board):
+                    possible_moves.append([0, 6])
+
     return possible_moves
+
+
 def create_logic_board():
     """Создание логической доски для вычисления возможных ходов фигур"""
     lb = np.zeros((8, 8), dtype=object)
 
     # Создаём логическую доску
-    lb[0][0] = Logic_Figure(Black, "R", [0, 0])
-    lb[0][1] = Logic_Figure(Black, "K", [0, 1])
-    lb[0][2] = Logic_Figure(Black, "B", [0, 2])
-    lb[0][3] = Logic_Figure(Black, "Q", [0, 3])
-    lb[0][4] = Logic_Figure(Black, "S", [0, 4])
-    lb[0][5] = Logic_Figure(Black, "B", [0, 5])
-    lb[0][6] = Logic_Figure(Black, "K", [0, 6])
-    lb[0][7] = Logic_Figure(Black, "R", [0, 7])
+    lb[0][0] = LogicFigure(Black, "R", [0, 0])
+    lb[0][1] = LogicFigure(Black, "K", [0, 1])
+    lb[0][2] = LogicFigure(Black, "B", [0, 2])
+    lb[0][3] = LogicFigure(Black, "Q", [0, 3])
+    lb[0][4] = LogicFigure(Black, "S", [0, 4])
+    lb[0][5] = LogicFigure(Black, "B", [0, 5])
+    lb[0][6] = LogicFigure(Black, "K", [0, 6])
+    lb[0][7] = LogicFigure(Black, "R", [0, 7])
 
     for i in range(8):
-        lb[1][i] = Logic_Figure(Black, "P", [1, i])
+        lb[1][i] = LogicFigure(Black, "P", [1, i])
 
     for i in range(8):
-        lb[6][i] = Logic_Figure(White, "P", [6, i])
+        lb[6][i] = LogicFigure(White, "P", [6, i])
 
-    lb[7][0] = Logic_Figure(White, "R", [7, 0])
-    lb[7][1] = Logic_Figure(White, "K", [7, 1])
-    lb[7][2] = Logic_Figure(White, "B", [7, 2])
-    lb[7][3] = Logic_Figure(White, "Q", [7, 3])
-    lb[7][4] = Logic_Figure(White, "S", [7, 4])
-    lb[7][5] = Logic_Figure(White, "B", [7, 5])
-    lb[7][6] = Logic_Figure(White, "K", [7, 6])
-    lb[7][7] = Logic_Figure(White, "R", [7, 7])
+    lb[7][0] = LogicFigure(White, "R", [7, 0])
+    lb[7][1] = LogicFigure(White, "K", [7, 1])
+    lb[7][2] = LogicFigure(White, "B", [7, 2])
+    lb[7][3] = LogicFigure(White, "Q", [7, 3])
+    lb[7][4] = LogicFigure(White, "S", [7, 4])
+    lb[7][5] = LogicFigure(White, "B", [7, 5])
+    lb[7][6] = LogicFigure(White, "K", [7, 6])
+    lb[7][7] = LogicFigure(White, "R", [7, 7])
 
     return lb
 

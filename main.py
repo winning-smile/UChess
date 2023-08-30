@@ -3,7 +3,9 @@ from start_game import *
 import logics as lg
 import itertools as it
 
-# TODO Timer
+# TODO Code restyling
+# TODO Game icon
+# TODO Fix logic
 # TODO Turn history
 # TODO Engine analysis
 # TODO liches manual analysis
@@ -14,6 +16,7 @@ import itertools as it
 # TODO Check/Mate red glow
 # TODO Mouse.drag figures moves
 # TODO Multiplayer
+
 
 def draw_board():
     """Отрисовка фона игрового поля"""
@@ -41,6 +44,7 @@ def create_turn_display(turn_counter):
     screen.blit(turn_display, turn_display_rect)
     screen.blit(color_display, color_display_rect)
 
+
 def main_loop():
     running = True
     screen.fill("GREY")
@@ -49,6 +53,7 @@ def main_loop():
     turn_counter = 1
     selected = False
     game_started = False
+    castling_dict = ["wsc", "wlc", "bsc", "blc"]
 
     draw_board()
     # Выбранная в текущий момент фигура
@@ -63,9 +68,9 @@ def main_loop():
     # Таймер
     timer_event = pygame.USEREVENT + 1
     pygame.time.set_timer(timer_event, 1000)
-    white_seconds = 15
+    white_seconds = 1
     white_minutes = 120
-    black_seconds = 15
+    black_seconds = 1
     black_minutes = 120
 
     white_timer = font_arial.render("{}:0{}".format(white_minutes, white_seconds), True, (0, 0, 0))
@@ -154,7 +159,23 @@ def main_loop():
                                     if fig.y == move.x and fig.x == move.y:
                                         fig.kill()
 
-                            selected_figure.move_figure(move.x, move.y)
+                            if move_flag not in castling_dict:
+                                selected_figure.move_figure(move.x, move.y)
+
+                            else:
+                                if move_flag == "wsc" or move_flag == "bsc":
+                                    selected_figure.move_figure(move.x, move.y)
+
+                                    for cfig in figures:
+                                        if cfig.x == move.y and cfig.y == move.x+1:
+                                            cfig.move_figure(move.x-1, move.y)
+
+                                elif move_flag == "wlc" or move_flag == "blc":
+                                    selected_figure.move_figure(move.x, move.y)
+
+                                    for cfig in figures:
+                                        if cfig.x == move.y and cfig.y == move.x - 2:
+                                            cfig.move_figure(move.x + 1, move.y)
 
                             if selected_figure.val == "P":
                                 if selected_figure.x == 7 and selected_figure.color == Black:
