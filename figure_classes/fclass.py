@@ -7,24 +7,29 @@ img_dict = {(Black, "P"): "img/bP.png", (Black, "R"): "img/bR.png", (Black, "K")
 
 
 class Figure(pygame.sprite.Sprite):
-    """Класс игровой фигуры"""
+    """Game figure class"""
     def __init__(self, color, value, xy):
         super().__init__()
-        self.first_move = False     # Флаг первого хода фигуры
-        self.color = color          # Цвет фигуры
-        self.val = value            # Значение фигуры
-        self.x = xy[0]              # Координата по х
-        self.y = xy[1]              # Координата по y
+        self.first_move = False     # First turn flag
+        self.color = color          # Figure color
+        self.val = value            # Figure value
+        self.x = xy[0]              # Figure x coord
+        self.y = xy[1]              # Figure y coord
 
-        # Изображение фигуры и его положение
+        # Figure image and rect
         self.image = pygame.image.load(img_dict[(self.color, self.val)]).convert_alpha()
         self.rect = self.image.get_rect(center=(360 + self.y*80, 80 + self.x*80))
 
+    def flow_figure(self, x, y):
+        self.x = x
+        self.y = y
+        self.rect = self.image.get_rect(center=(self.y, self.x))
+
     def move_figure(self, x, y):
-        """Функция перемещиня фигуры на визуальной доске"""
+        """Moves figure on x,y coords"""
         print("yes")
-        self.x = y
-        self.y = x
+        self.x = x
+        self.y = y
         self.rect = self.image.get_rect(center=(360 + self.y * 80, 80 + self.x * 80))
 
     def to_queen(self):
